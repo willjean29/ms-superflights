@@ -8,7 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
-  app.setGlobalPrefix('/api/v1');
+  app.setGlobalPrefix('/api/v2');
   app.useGlobalFilters(new AllExceptionFilter())
   app.useGlobalInterceptors(new TimeOutInterceptor)
   const config = new DocumentBuilder()

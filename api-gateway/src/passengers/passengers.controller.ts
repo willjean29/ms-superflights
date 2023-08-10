@@ -5,7 +5,9 @@ import { PassengersMsg } from '../common/enum/rabbitmq.enum';
 import { UpdatePassengerDto } from './dto/update-passenger.dto';
 import { IPassenger } from '../common/interfaces/passenger.interface';
 import { Observable } from 'rxjs';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('passengers')
 @Controller('passengers')
 export class PassengersController {
   constructor(private readonly clientProxySuperFlight: ClientProxySuperFlight) { }

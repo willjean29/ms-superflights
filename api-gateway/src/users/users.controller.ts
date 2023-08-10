@@ -4,7 +4,9 @@ import { UserDto } from './dto/user.dto';
 import { UsersMsg } from '../common/enum/rabbitmq.enum';
 import { Observable } from 'rxjs';
 import { IUser } from '../common/interfaces/user.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
