@@ -16,13 +16,14 @@ export class AllExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    const isInstanceOfHttpException = exception instanceof HttpException;
     const status =
-      exception instanceof HttpException
+      isInstanceOfHttpException
         ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+        : exception.status ? exception.status : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const msg =
-      exception instanceof HttpException ? exception.getResponse() : exception;
+      isInstanceOfHttpException ? exception.getResponse() : exception.response ? exception.response : exception;
 
     this.logger.error(`Status ${status} Error: ${JSON.stringify(msg)}`);
 

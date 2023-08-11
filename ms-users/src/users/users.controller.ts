@@ -2,9 +2,8 @@ import { Controller } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-
-// import { MongoIdValidationPipe } from '../common/pipes/MongoIdValidationPipe';
 import { UsersMsg } from '../common/enum/rabbitmq.enum';
+import { MongoIdValidationPipe } from '../common/pipes/MongoIdValidationPipe';
 
 @Controller()
 export class UsersController {
@@ -23,7 +22,7 @@ export class UsersController {
   }
 
   @MessagePattern(UsersMsg.FindOne)
-  findOne(@Payload() id: string) {
+  findOne(@Payload(new MongoIdValidationPipe()) id: string) {
     return this.usersService.findOne(id)
   }
 
@@ -33,12 +32,12 @@ export class UsersController {
   }
 
   @MessagePattern(UsersMsg.Update)
-  update(@Payload() payload: any) {
+  update(@Payload(new MongoIdValidationPipe()) payload: { id: string, userDto: UserDto }) {
     return this.usersService.update(payload.userDto, payload.id);
   }
 
   @MessagePattern(UsersMsg.Delete)
-  deleteOnte(@Payload() id: string) {
-    return this.usersService.deleteOne(id);
+  delete(@Payload(new MongoIdValidationPipe()) id: string) {
+    return this.usersService.delete(id);
   }
 }

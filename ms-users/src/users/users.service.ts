@@ -6,6 +6,7 @@ import { Collections } from 'src/common/models/collections';
 import { UserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRoles } from 'src/common/enum/roles.enum';
+import { RpcException } from '@nestjs/microservices';
 @Injectable()
 export class UsersService {
   constructor(
@@ -46,7 +47,7 @@ export class UsersService {
   async findOne(id: string): Promise<IUser> {
     const user = await this.userModel.findOne({ _id: id });
     if (!user) {
-      throw new NotFoundException(`User with ${id} not found`);
+      throw new RpcException(new NotFoundException(`User with ${id} not found`));
     }
     return user;
   }
@@ -70,7 +71,7 @@ export class UsersService {
     return newUser;
   }
 
-  async deleteOne(id: string): Promise<IUser> {
+  async delete(id: string): Promise<IUser> {
     const user = await this.findOne(id);
     await this.userModel.deleteOne({ _id: id });
     return user;
