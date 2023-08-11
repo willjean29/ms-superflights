@@ -10,7 +10,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   app.setGlobalPrefix('/api/v2');
   app.useGlobalFilters(new AllExceptionFilter())
-  app.useGlobalInterceptors(new TimeOutInterceptor)
+  app.useGlobalInterceptors(new TimeOutInterceptor())
   const config = new DocumentBuilder()
     .setTitle('MS SuperFlight API Documentation')
     .setDescription('Scheduled Flight app')
