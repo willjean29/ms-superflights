@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFlightDto } from './dto/create-flight.dto';
 import { UpdateFlightDto } from './dto/update-flight.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,11 +13,15 @@ export class FlightsService {
     @InjectModel(Collections.Flights)
     private readonly flightModel: Model<IFlight>
   ) { }
-
+  private logger = new Logger('FlightsService');
   async create(createFlightDto: CreateFlightDto): Promise<IFlight> {
-    const flight = new this.flightModel(createFlightDto);
-    await flight.save();
-    return flight;
+    try {
+      const flight = new this.flightModel(createFlightDto);
+      await flight.save();
+      return flight;
+    } catch (error) {
+      this.handleException(error);
+    }
   }
 
   async findAll(): Promise<IFlight[]> {
@@ -35,8 +39,12 @@ export class FlightsService {
 
   async update(id: string, updateFlightDto: UpdateFlightDto): Promise<IFlight> {
     await this.findOne(id);
-    const newFLight = await this.flightModel.findByIdAndUpdate(id, updateFlightDto, { new: true });
-    return newFLight;
+    try {
+      const newFLight = await this.flightModel.findByIdAndUpdate(id, updateFlightDto, { new: true });
+      return newFLight;
+    } catch (error) {
+      this.handleException(error);
+    }
   }
 
   async remove(id: string): Promise<IFlight> {
@@ -53,5 +61,15 @@ export class FlightsService {
       }
     }, { new: true }).populate(Collections.Passenger);
     return flight;
+  }
+
+  private handleException(error: any) {
+    this.logger.error(error);
+    if (error.code === 11000) {
+      const duplicateKeys = Object.keys(error.keyValue);
+      const msg = `${duplicateKeys} are already in use, please try again`;
+      throw new RpcException(new BadRequestException(msg));
+    }
+    throw new RpcException(error);
   }
 }
