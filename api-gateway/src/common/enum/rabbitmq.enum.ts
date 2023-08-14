@@ -10,7 +10,7 @@ export enum UsersMsg {
   FindOne = "FIND_USER",
   Update = "UPDATE_USER",
   Delete = "DELETE_USER",
-  ValidUser = "VALID_USER"
+  ValidUser = "VALID_USER",
 }
 
 export enum PassengersMsg {
