@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
 import { ClientProxySuperFlight } from '../common/proxy/client-proxy';
 import { CreateFlightDto } from './dto/create-flight.dto';
 import { FlightsMsg, PassengersMsg } from '../common/enum/rabbitmq.enum';
@@ -25,27 +25,24 @@ export class FlightsController {
     return this.clientProxyFlight.send(FlightsMsg.FindAll, '');
   }
 
-  @Get('id')
+  @Get(':id')
   findOne(@Param('id') id: string): Observable<IFlight> {
     return this.clientProxyFlight.send(FlightsMsg.FindOne, id);
   }
 
-  @Put('id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateFlightDto: UpdateFlightDto): Observable<IFlight> {
     return this.clientProxyFlight.send(FlightsMsg.Update, { id, updateFlightDto });
   }
 
-  @Delete('id')
+  @Delete(':id')
   delete(@Param('id') id: string): Observable<IFlight> {
     return this.clientProxyFlight.send(FlightsMsg.Delete, id);
   }
 
   @Post(':fligthId/passengers/:passengerId')
   async addPassenger(@Param('fligthId') fligthId: string, @Param('passengerId',) passengerId: string) {
-    const passenger = await this.clientProxyPassenger.send(PassengersMsg.FindOne, passengerId).toPromise()
-    if (!passenger) {
-      throw new BadRequestException('Pass')
-    }
-    return this.clientProxyFlight.send(FlightsMsg.AddPassenger, { fligthId, passengerId })
+    await this.clientProxyPassenger.send(PassengersMsg.FindOne, passengerId).toPromise()
+    return this.clientProxyFlight.send(FlightsMsg.AddPassenger, { id: fligthId, passengerId })
   }
 }
