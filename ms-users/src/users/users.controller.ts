@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersMsg } from '../common/enum/rabbitmq.enum';
 import { MongoIdValidationPipe } from '../common/pipes/MongoIdValidationPipe';
+import { SignInDto } from './dto/signin.dto';
 
 @Controller()
 export class UsersController {
@@ -39,5 +40,10 @@ export class UsersController {
   @MessagePattern(UsersMsg.Delete)
   delete(@Payload(new MongoIdValidationPipe()) id: string) {
     return this.usersService.delete(id);
+  }
+
+  @MessagePattern(UsersMsg.ValidUser)
+  validateUser(@Payload() signInDto: SignInDto) {
+    return this.usersService.validateUser(signInDto);
   }
 }

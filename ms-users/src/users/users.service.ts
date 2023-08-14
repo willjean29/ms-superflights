@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IUser } from 'src/common/interfaces/user.interface';
@@ -7,6 +7,7 @@ import { UserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRoles } from 'src/common/enum/roles.enum';
 import { RpcException } from '@nestjs/microservices';
+import { SignInDto } from './dto/signin.dto';
 @Injectable()
 export class UsersService {
   constructor(
@@ -82,6 +83,19 @@ export class UsersService {
   async delete(id: string): Promise<IUser> {
     const user = await this.findOne(id);
     await this.userModel.deleteOne({ _id: id });
+    return user;
+  }
+
+  async validateUser(signInDto: SignInDto): Promise<IUser> {
+    const { email, password } = signInDto;
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new RpcException(new UnauthorizedException('Credentials are not valid (email)'));
+    }
+    const isValidPassword = await this.checkPassword(password, user.password);
+    if (!isValidPassword) {
+      throw new RpcException(new UnauthorizedException('Credentials are not valid (password)'));
+    }
     return user;
   }
 
