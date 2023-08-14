@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IUser } from 'src/common/interfaces/user.interface';
@@ -13,7 +13,7 @@ export class UsersService {
     @InjectModel(Collections.User)
     private readonly userModel: Model<IUser>
   ) { };
-
+  private logger = new Logger('UsersService');
   async hashPassword(password: string): Promise<string> {
     const salts = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salts);
@@ -25,13 +25,17 @@ export class UsersService {
   }
 
   async create(userDto: UserDto): Promise<IUser> {
-    const { password } = userDto;
-    const user = new this.userModel({
-      ...userDto,
-      password: await this.hashPassword(password)
-    });
-    await user.save();
-    return user;
+    try {
+      const { password } = userDto;
+      const user = new this.userModel({
+        ...userDto,
+        password: await this.hashPassword(password)
+      });
+      await user.save();
+      return user;
+    } catch (error) {
+      this.handleException(error);
+    }
   }
 
   async findByEmail(email: string): Promise<IUser> {
@@ -60,20 +64,34 @@ export class UsersService {
   async update(userDto: UserDto, id: string): Promise<IUser> {
     const { password } = userDto;
     await this.findOne(id);
-    if (password) {
-      userDto = {
-        ...userDto,
-        password: await this.hashPassword(password)
+    try {
+      if (password) {
+        userDto = {
+          ...userDto,
+          password: await this.hashPassword(password)
+        }
       }
-    }
 
-    const newUser = await this.userModel.findByIdAndUpdate({ _id: id }, userDto, { new: true });
-    return newUser;
+      const newUser = await this.userModel.findByIdAndUpdate({ _id: id }, userDto, { new: true });
+      return newUser;
+    } catch (error) {
+      this.handleException(error);
+    }
   }
 
   async delete(id: string): Promise<IUser> {
     const user = await this.findOne(id);
     await this.userModel.deleteOne({ _id: id });
     return user;
+  }
+
+  private handleException(error: any) {
+    this.logger.error(error);
+    if (error.code === 11000) {
+      const duplicateKeys = Object.keys(error.keyValue);
+      const msg = `${duplicateKeys} are already in use, please try again`;
+      throw new RpcException(new BadRequestException(msg));
+    }
+    throw new RpcException(error);
   }
 }
