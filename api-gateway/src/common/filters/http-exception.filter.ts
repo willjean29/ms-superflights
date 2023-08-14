@@ -20,7 +20,7 @@ export class AllExceptionFilter implements ExceptionFilter {
     const status =
       isInstanceOfHttpException
         ? exception.getStatus()
-        : exception.status ? exception.status : HttpStatus.INTERNAL_SERVER_ERROR;
+        : !isNaN(exception.status) ? exception.status : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const msg =
       isInstanceOfHttpException ? exception.getResponse() : exception.response ? exception.response : exception;
