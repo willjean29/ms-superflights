@@ -1,0 +1,60 @@
+version: '3'
+
+services: 
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+  
+  app-flights:
+    image: app-flights
+    container_name: app-flights
+    build: 
+      context: ./api-gateway
+      target: dev
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    env_file: .env
+    restart: always
+    depends_on:
+      - mongo
+
+  ms-users:
+    image: ms-users
+    container_name: ms-users
+    build: 
+      context: ./ms-users
+      target: dev
+      dockerfile: Dockerfile
+    env_file: .env
+    restart: always
+    depends_on:
+      - mongo
+  
+  ms-passengers:
+    image: ms-passengers
+    container_name: ms-passengers
+    build: 
+      context: ./ms-passengers
+      target: dev
+      dockerfile: Dockerfile
+    env_file: .env
+    restart: always
+    depends_on:
+      - mongo
+
+  ms-flights:
+    image: ms-flights
+    container_name: ms-flights
+    build: 
+      context: ./ms-flights
+      target: dev
+      dockerfile: Dockerfile
+    env_file: .env
+    restart: always
+    depends_on:
+      - mongo
